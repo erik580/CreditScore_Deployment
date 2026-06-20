@@ -8,6 +8,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.base import BaseEstimator, TransformerMixin
 
+
+# Class Feature Engineering 
 class CreditScoreFeatureEngineer(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
@@ -17,9 +19,7 @@ class CreditScoreFeatureEngineer(BaseEstimator, TransformerMixin):
 
         df = X.copy()
 
-        # =========================
-        # CLEANING
-        # =========================
+        # 1. Drop uninformative Column
 
         uninformative = [
             "Unnamed: 0",
@@ -35,6 +35,8 @@ class CreditScoreFeatureEngineer(BaseEstimator, TransformerMixin):
             columns=uninformative,
             errors="ignore"
         )
+
+        # 2. Handle data anomaly
 
         df["Occupation"] = df["Occupation"].replace(
             "_______",
@@ -69,9 +71,6 @@ class CreditScoreFeatureEngineer(BaseEstimator, TransformerMixin):
             )
         )
 
-        # =========================
-        # NUMERIC CONVERSION
-        # =========================
 
         numeric_object_cols = [
             'Annual_Income',
@@ -82,6 +81,7 @@ class CreditScoreFeatureEngineer(BaseEstimator, TransformerMixin):
             'Amount_invested_monthly'
         ]
 
+        # 3. Hapus trailing space pada kolom numerik
         for col in numeric_object_cols:
 
             df[col] = (
@@ -90,11 +90,14 @@ class CreditScoreFeatureEngineer(BaseEstimator, TransformerMixin):
                 .str.replace('_', '', regex=False)
             )
 
+        # 4. Hapus anomaly pada kolom numerik
         df["Changed_Credit_Limit"] = (
             df["Changed_Credit_Limit"]
             .replace(["", "_"], np.nan)
         )
 
+        
+        # 5. Convert datatype numerik
         num_convert = [
             'Annual_Income',
             'Num_of_Loan',
@@ -110,16 +113,17 @@ class CreditScoreFeatureEngineer(BaseEstimator, TransformerMixin):
                 df[col],
                 errors="coerce"
             )
-        # =========================
-        # OUTLIER CAPPING
-        # =========================
+
+
+        # 6. Capping outlier
         
+        # memanggil method cap_outliers
         df = self.cap_outliers(df)
 
-        # =========================
-        # TYPE OF LOAN
-        # =========================
 
+        # ==== 7. Feature Engineering ====
+
+        # 7.1 : Type_of_Loan
         df["Type_of_Loan"] = (
             df["Type_of_Loan"]
             .fillna("Not Specified")
@@ -137,6 +141,7 @@ class CreditScoreFeatureEngineer(BaseEstimator, TransformerMixin):
             "Auto Loan"
         ]
 
+        # pecah menjadi beberapa fitur
         loan_data = (
             df["Type_of_Loan"]
             .astype("string")
@@ -169,10 +174,7 @@ class CreditScoreFeatureEngineer(BaseEstimator, TransformerMixin):
             axis=1
         )
 
-        # =========================
-        # CREDIT HISTORY
-        # =========================
-
+        # 7.2 : Credit History Age
         df["Credit_History_Age"] = (
             df["Credit_History_Age"]
             .fillna("0 Years and 0 Months")
@@ -198,10 +200,7 @@ class CreditScoreFeatureEngineer(BaseEstimator, TransformerMixin):
             columns=["Credit_History_Age"]
         )
 
-        # =========================
-        # PAYMENT BEHAVIOUR
-        # =========================
-
+        # 7.3 : Spent_Frequency
         df["Spent_Frequency"] = (
             df["Payment_Behaviour"]
             .str.extract(
@@ -222,6 +221,7 @@ class CreditScoreFeatureEngineer(BaseEstimator, TransformerMixin):
 
         return df
     
+    # Method untuk handle outliers (capping/winzorisation) 
     def cap_outliers(self, df):
 
         num_cols = [
@@ -279,24 +279,19 @@ class CreditScoreFeatureEngineer(BaseEstimator, TransformerMixin):
         return df
 
 class CreditScorePreprocessor:
-    """
-    Handles:
-    - Data cleaning
-    - Data type conversion
-    - Outlier capping
-    - Train-test split
-    - Feature engineering
-    - Preprocessing pipeline creation
-    - Target encoding
-    """
+
+    # Class utama untuk menghandle :
+    # - Data cleaning
+    # - Data type conversion
+    # - Outlier capping
+    # - Train-test split
+    # - Feature engineering
+    # - Preprocessing pipeline creation
+    # - Target encoding
+
 
     # Buat constructor
-    def __init__(
-        self,
-        test_size: float = 0.2,
-        random_state: int = 580,
-        artifact_path: str | Path = "artifacts"
-    ):
+    def __init__(self, test_size: float = 0.2, random_state: int = 580, artifact_path: str | Path = "artifacts"):
 
         self.test_size = test_size
         self.random_state = random_state
