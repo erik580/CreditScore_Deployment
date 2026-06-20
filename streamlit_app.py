@@ -8,10 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ======================
-# LOAD MODEL
-# ======================
-
+# Load model
 try:
     model = joblib.load("model.pkl")
 except Exception as e:
@@ -19,13 +16,9 @@ except Exception as e:
     st.stop()
 
 
-# ======================
-# MAIN APP
-# ======================
-
 def main():
 
-    st.title("💳 Credit Score Prediction")
+    st.title("Credit Score Prediction")
 
     st.markdown(
         """
@@ -36,22 +29,17 @@ def main():
 
     st.divider()
 
-    # ======================
-    # TABS
-    # ======================
-
+    # Input Tab
     tab1, tab2, tab3 = st.tabs(
         [
-            "👤 Personal & Income",
-            "🏦 Credit Profile",
-            "📈 Behaviour & Debt"
+            "Personal & Income",
+            "Credit Profile",
+            "Behaviour & Debt"
         ]
     )
 
-    # ==================================================
-    # TAB 1
-    # ==================================================
 
+    # ======= Tab 1 - Personal Income =======
     with tab1:
 
         occupation = st.selectbox(
@@ -102,10 +90,8 @@ def main():
             value=1000.0
         )
 
-    # ==================================================
-    # TAB 2
-    # ==================================================
 
+    # ======= Tab 2 - Credit Profile =======
     with tab2:
 
         interest_rate = st.number_input(
@@ -169,19 +155,13 @@ def main():
             value=3.0
         )
 
-    # ==================================================
-    # TAB 3
-    # ==================================================
 
+    # ======= Tab 3 - Behaviour & Debt =======
     with tab3:
 
         credit_mix = st.selectbox(
             "Credit Mix",
-            [
-                "Bad",
-                "Standard",
-                "Good"
-            ]
+            ["Bad", "Standard", "Good"]
         )
 
         outstanding_debt = st.text_input(
@@ -217,16 +197,12 @@ def main():
             )
 
         credit_history = (
-            f"{credit_history_year} Years and "
-            f"{credit_history_month} Months"
+            f"{credit_history_year} Years and " f"{credit_history_month} Months"
         )
 
         payment_min_amount = st.selectbox(
             "Payment of Min Amount",
-            [
-                "Yes",
-                "No"
-            ]
+            ["Yes", "No"]
         )
 
         total_emi = st.number_input(
@@ -249,22 +225,17 @@ def main():
 
     st.divider()
 
-    # ======================
-    # PREDICT BUTTON
-    # ======================
-
+    # Predict Button
     left, center, right = st.columns([3, 1, 3])
 
     with center:
         predict_button = st.button(
-            "🔍 Predict Credit Score",
+            "Predict Credit Score",
             use_container_width=True
         )
 
-    # ======================
-    # PREDICTION
-    # ======================
 
+    # Predict
     if predict_button:
 
         data = {
@@ -395,6 +366,7 @@ def main():
                 use_container_width=True
             )
 
+        # Melakukan prediksi
         prediction = model.predict(df)[0]
 
         mapping = {
@@ -409,6 +381,7 @@ def main():
 
         st.subheader("📊 Prediction Result")
 
+        # 3 case agar output berwarna berdasarkan tingkat credit score nya
         if predicted_label == "Good":
             st.success(f"Predicted Credit Score: {predicted_label}")
 
